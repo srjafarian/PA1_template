@@ -1,239 +1,190 @@
----
-title: "PA1"
-author: "Scott Jeff"
-date: "June 30, 2019"
-output: 
-  html_document: 
-    keep_md: true
----
+RepData peer Assesssment 1
+========================================================
 
 
+Loading the data
+----------------
+
+* Load the data
+
+```r
+activity = read.csv("activity.csv")
+```
+
+* Process/transform the data (if necessary) into a format suitable for your analysis
+
+```r
+totalSteps <- aggregate(steps ~ date, data = activity, sum, na.rm = TRUE)
+```
+
+
+What is mean total number of steps taken per day?
+-------------------------------------------------
+
+* Make a histogram of the total number of steps taken each day
+
+```r
+hist(totalSteps$steps)
+```
+
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
+
+
+* Calculate and report the **mean** and **median** total number of steps taken 
+per day 
 
 
 ```r
-# download file from web
-download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip", destfile = "activity.zip", mode="wb")
-# unzip data and read
-unzip("activity.zip")
-stepdata <- read.csv("activity.csv", header = TRUE)
-head(stepdata)
+mean(totalSteps$steps)
 ```
 
 ```
-##   steps       date interval
-## 1    NA 2012-10-01        0
-## 2    NA 2012-10-01        5
-## 3    NA 2012-10-01       10
-## 4    NA 2012-10-01       15
-## 5    NA 2012-10-01       20
-## 6    NA 2012-10-01       25
+## [1] 10766
 ```
 
 ```r
-library(magrittr)
-```
-
-```
-## Warning: package 'magrittr' was built under R version 3.5.2
-```
-
-```r
-library(dplyr)
-```
-
-```
-## Warning: package 'dplyr' was built under R version 3.5.2
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
-databydate <- stepdata %>% select(date, steps) %>% group_by(date) %>% summarize(tsteps= sum(steps)) %>%na.omit()
-hist(databydate$tsteps, xlab = "Total daily Steps",main="Histogram of Total Steps by day", breaks = 20)
-mean(databydate$tsteps)
-```
-
-```
-## [1] 10766.19
-```
-
-```r
-median(databydate$tsteps)
+median(totalSteps$steps)
 ```
 
 ```
 ## [1] 10765
 ```
 
-```r
-library(ggplot2)
-```
+* The **mean** total number of steps taken per day is 
+    1.0766 &times; 10<sup>4</sup> steps.
+* The **median** total number of steps taken per day is 
+    10765 steps.
+    
+What is the average daily activity pattern?
+-------------------------------------------
 
-```
-## Warning: package 'ggplot2' was built under R version 3.5.2
-```
+* Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-![](untitle_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
-
-```r
-databyinterval <- stepdata%>% select(interval, steps) %>% na.omit() %>% group_by(interval) %>% summarize(tsteps= mean(steps))
-ggplot(databyinterval, aes(x=interval, y=tsteps))+ geom_line()
-```
-
-![](untitle_files/figure-html/unnamed-chunk-1-2.png)<!-- -->
 
 ```r
-databyinterval[which(databyinterval$tsteps== max(databyinterval$tsteps)),]
+stepsInterval <- aggregate(steps ~ interval, data = activity, mean, na.rm = TRUE)
+plot(steps ~ interval, data = stepsInterval, type = "l")
 ```
 
-```
-## # A tibble: 1 x 2
-##   interval tsteps
-##      <int>  <dbl>
-## 1      835   206.
-```
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5.png) 
 
-```r
-# generate listing of NA's
-missingVals <- sum(is.na(data))
-```
 
-```
-## Warning in is.na(data): is.na() applied to non-(list or vector) of type
-## 'closure'
-```
+* Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps? 
 
 ```r
-missingVals
+stepsInterval[which.max(stepsInterval$steps), ]$interval
 ```
 
 ```
-## [1] 0
+## [1] 835
 ```
 
-```r
-library(magrittr)
-library(dplyr)
-replacewithmean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
-meandata <- stepdata%>% group_by(interval) %>% mutate(steps= replacewithmean(steps))
-head(meandata)
-```
 
-```
-## # A tibble: 6 x 3
-## # Groups:   interval [6]
-##    steps date       interval
-##    <dbl> <fct>         <int>
-## 1 1.72   2012-10-01        0
-## 2 0.340  2012-10-01        5
-## 3 0.132  2012-10-01       10
-## 4 0.151  2012-10-01       15
-## 5 0.0755 2012-10-01       20
-## 6 2.09   2012-10-01       25
-```
+It is the **835th** interval.
+
+Imputing missing values
+-----------------------
+
+* Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
 ```r
-FullSummedDataByDay <- aggregate(meandata$steps, by=list(meandata$date), sum)
-names(FullSummedDataByDay)[1] ="date"
-names(FullSummedDataByDay)[2] ="totalsteps"
-head(FullSummedDataByDay,15)
+sum(is.na(activity$steps))
 ```
 
 ```
-##          date totalsteps
-## 1  2012-10-01   10766.19
-## 2  2012-10-02     126.00
-## 3  2012-10-03   11352.00
-## 4  2012-10-04   12116.00
-## 5  2012-10-05   13294.00
-## 6  2012-10-06   15420.00
-## 7  2012-10-07   11015.00
-## 8  2012-10-08   10766.19
-## 9  2012-10-09   12811.00
-## 10 2012-10-10    9900.00
-## 11 2012-10-11   10304.00
-## 12 2012-10-12   17382.00
-## 13 2012-10-13   12426.00
-## 14 2012-10-14   15098.00
-## 15 2012-10-15   10139.00
+## [1] 2304
 ```
+
+Total 2304 rows are missing.
+
+* Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+: I used a strategy for filing in all of the missing values with the mean for that 5-minute interval. First of all, I made a function **"interval2steps"** to get the mean steps for particular 5-minute interval. 
 
 ```r
-summary(FullSummedDataByDay)
+interval2steps <- function(interval) {
+    stepsInterval[stepsInterval$interval == interval, ]$steps
+}
+```
+
+
+* Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+
+```r
+activityFilled <- activity  # Make a new dataset with the original data
+count = 0  # Count the number of data filled in
+for (i in 1:nrow(activityFilled)) {
+    if (is.na(activityFilled[i, ]$steps)) {
+        activityFilled[i, ]$steps <- interval2steps(activityFilled[i, ]$interval)
+        count = count + 1
+    }
+}
+cat("Total ", count, "NA values were filled.\n\r")
 ```
 
 ```
-##          date      totalsteps   
-##  2012-10-01: 1   Min.   :   41  
-##  2012-10-02: 1   1st Qu.: 9819  
-##  2012-10-03: 1   Median :10766  
-##  2012-10-04: 1   Mean   :10766  
-##  2012-10-05: 1   3rd Qu.:12811  
-##  2012-10-06: 1   Max.   :21194  
-##  (Other)   :55
+## Total  2304 NA values were filled.
+## 
+```
+
+
+* Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. 
+
+```r
+totalSteps2 <- aggregate(steps ~ date, data = activityFilled, sum)
+hist(totalSteps2$steps)
+```
+
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
+
+```r
+mean(totalSteps2$steps)
+```
+
+```
+## [1] 10766
 ```
 
 ```r
-hist(FullSummedDataByDay$totalsteps, xlab = "Steps", ylab = "Frequency", main = "Total Daily Steps", breaks = 20)
-```
-
-![](untitle_files/figure-html/unnamed-chunk-1-3.png)<!-- -->
-
-```r
-oldmean <- mean(databydate$tsteps, na.rm = TRUE)
-newmean <- mean(FullSummedDataByDay$totalsteps)
-# Old mean and New mean
-oldmean
+median(totalSteps2$steps)
 ```
 
 ```
-## [1] 10766.19
+## [1] 10766
 ```
 
-```r
-newmean
-```
+* The **mean** total number of steps taken per day is 
+1.0766 &times; 10<sup>4</sup> steps.
+* The **median** total number of steps taken per day is 
+1.0766 &times; 10<sup>4</sup> steps.
 
-```
-## [1] 10766.19
-```
+* Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+: The **mean** value is the **same** as the value before imputing missing data because we put the mean value for that particular 5-min interval. The median value shows **a little** difference : but it depends on **where the missing values are**.
+
+Are there differences in activity patterns between weekdays and weekends?
+---------------------------------------------------------------------------
+
+* Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 
 ```r
-oldmedian <- median(databydate$tsteps, na.rm = TRUE)
-newmedian <- median(FullSummedDataByDay$totalsteps)
-# Old median and New median
-oldmedian
+activityFilled$day = ifelse(as.POSIXlt(as.Date(activityFilled$date))$wday%%6 == 
+    0, "weekend", "weekday")
+# For Sunday and Saturday : weekend, Other days : weekday
+activityFilled$day = factor(activityFilled$day, levels = c("weekday", "weekend"))
 ```
 
-```
-## [1] 10765
-```
+
+
+* Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was creating using simulated data:
 
 ```r
-meandata$date <- as.Date(meandata$date)
-meandata$weekday <- weekdays(meandata$date)
-meandata$weekend <- ifelse(meandata$weekday=="Saturday" | meandata$weekday=="Sunday", "Weekend", "Weekday" )
-library(ggplot2)
-meandataweekendweekday <- aggregate(meandata$steps , by= list(meandata$weekend, meandata$interval), na.omit(mean))
-names(meandataweekendweekday) <- c("weekend", "interval", "steps")
-ggplot(meandataweekendweekday, aes(x=interval, y=steps, color=weekend)) + geom_line()+
-  facet_grid(weekend ~.) + xlab("Interval") + ylab("Mean of Steps") +
-  ggtitle("Comparison of Average Number of Steps in Each Interval")
+stepsInterval2 = aggregate(steps ~ interval + day, activityFilled, mean)
+library(lattice)
+xyplot(steps ~ interval | factor(day), data = stepsInterval2, aspect = 1/2, 
+    type = "l")
 ```
 
-![](untitle_files/figure-html/unnamed-chunk-1-4.png)<!-- -->
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12.png) 
+
