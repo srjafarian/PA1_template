@@ -1,19 +1,15 @@
 ---
-title: "PA1"
-author: "Scott Jeff"
+title: "newscott"
+author: "Scott"
 date: "June 30, 2019"
-output: 
-  html_document: 
-    keep_md: true
+output: html_document
 ---
 
 
 
 
 ```r
-# download file from web
 download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip", destfile = "activity.zip", mode="wb")
-# unzip data and read
 unzip("activity.zip")
 stepdata <- read.csv("activity.csv", header = TRUE)
 head(stepdata)
@@ -31,40 +27,14 @@ head(stepdata)
 
 ```r
 library(magrittr)
-```
-
-```
-## Warning: package 'magrittr' was built under R version 3.5.2
-```
-
-```r
 library(dplyr)
-```
-
-```
-## Warning: package 'dplyr' was built under R version 3.5.2
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 databydate <- stepdata %>% select(date, steps) %>% group_by(date) %>% summarize(tsteps= sum(steps)) %>%na.omit()
 hist(databydate$tsteps, xlab = "Total daily Steps",main="Histogram of Total Steps by day", breaks = 20)
+```
+
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-1.png)
+
+```r
 mean(databydate$tsteps)
 ```
 
@@ -82,20 +52,11 @@ median(databydate$tsteps)
 
 ```r
 library(ggplot2)
-```
-
-```
-## Warning: package 'ggplot2' was built under R version 3.5.2
-```
-
-![](untitle_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
-
-```r
 databyinterval <- stepdata%>% select(interval, steps) %>% na.omit() %>% group_by(interval) %>% summarize(tsteps= mean(steps))
 ggplot(databyinterval, aes(x=interval, y=tsteps))+ geom_line()
 ```
 
-![](untitle_files/figure-html/unnamed-chunk-1-2.png)<!-- -->
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-2.png)
 
 ```r
 databyinterval[which(databyinterval$tsteps== max(databyinterval$tsteps)),]
@@ -109,7 +70,6 @@ databyinterval[which(databyinterval$tsteps== max(databyinterval$tsteps)),]
 ```
 
 ```r
-# generate listing of NA's
 missingVals <- sum(is.na(data))
 ```
 
@@ -192,12 +152,11 @@ summary(FullSummedDataByDay)
 hist(FullSummedDataByDay$totalsteps, xlab = "Steps", ylab = "Frequency", main = "Total Daily Steps", breaks = 20)
 ```
 
-![](untitle_files/figure-html/unnamed-chunk-1-3.png)<!-- -->
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-3.png)
 
 ```r
 oldmean <- mean(databydate$tsteps, na.rm = TRUE)
 newmean <- mean(FullSummedDataByDay$totalsteps)
-# Old mean and New mean
 oldmean
 ```
 
@@ -216,7 +175,6 @@ newmean
 ```r
 oldmedian <- median(databydate$tsteps, na.rm = TRUE)
 newmedian <- median(FullSummedDataByDay$totalsteps)
-# Old median and New median
 oldmedian
 ```
 
@@ -232,8 +190,8 @@ library(ggplot2)
 meandataweekendweekday <- aggregate(meandata$steps , by= list(meandata$weekend, meandata$interval), na.omit(mean))
 names(meandataweekendweekday) <- c("weekend", "interval", "steps")
 ggplot(meandataweekendweekday, aes(x=interval, y=steps, color=weekend)) + geom_line()+
-  facet_grid(weekend ~.) + xlab("Interval") + ylab("Mean of Steps") +
-  ggtitle("Comparison of Average Number of Steps in Each Interval")
+facet_grid(weekend ~.) + xlab("Interval") + ylab("Mean of Steps") +
+ggtitle("Comparison of Average Number of Steps in Each Interval")
 ```
 
-![](untitle_files/figure-html/unnamed-chunk-1-4.png)<!-- -->
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-4.png)
