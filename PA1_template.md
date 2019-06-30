@@ -1,10 +1,3 @@
----
-title: "newscott"
-author: "Scott"
-date: "June 30, 2019"
-output: html_document
----
-
 
 
 
