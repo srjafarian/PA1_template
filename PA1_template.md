@@ -1,3 +1,16 @@
+---
+title: "PA_1 Template"
+author: "Scott"
+date: "June 30, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
 # download file from web
 download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip", destfile = "activity.zip", mode="wb")
 # unzip data and read
@@ -46,3 +59,4 @@ names(meandataweekendweekday) <- c("weekend", "interval", "steps")
 ggplot(meandataweekendweekday, aes(x=interval, y=steps, color=weekend)) + geom_line()+
   facet_grid(weekend ~.) + xlab("Interval") + ylab("Mean of Steps") +
   ggtitle("Comparison of Average Number of Steps in Each Interval")
+```
